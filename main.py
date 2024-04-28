@@ -7,13 +7,16 @@ from telebot import types
 @bot.message_handler(commands=['start'])
 def startBot(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    btn1 = types.KeyboardButton("фикл")
-    btn2 = types.KeyboardButton('самые изучаемые')
+    btn1 = types.KeyboardButton(facl_list)
+    btn2 = types.KeyboardButton(most_list)
     markup.add(btn1, btn2)
     bot.send_message(message.from_user.id, "Выберите языки", reply_markup=markup)
 
+
 bot.polling(none_stop=True, interval=0) #обязательная для работы бота часть
 
+facl_list = "фикл"
+most_list = "самые изучаемые"
 '''from pygrambank import Grambank
 gb = Grambank('.')
 gb.sheets_dir
