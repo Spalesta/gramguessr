@@ -1,17 +1,18 @@
 import telebot
 
-botTimeWeb = telebot.TeleBot('7133097481:AAGizdgJ2SPCFJb6KynnTn_k5ilPfbKbwLY')
+bot = telebot.TeleBot('7133097481:AAGizdgJ2SPCFJb6KynnTn_k5ilPfbKbwLY')
 
 from telebot import types
 
-@botTimeWeb.message_handler(commands=['start'])
+@bot.message_handler(commands=['start'])
 def startBot(message):
-  first_mess = f"<b>{message.from_user.first_name} {message.from_user.last_name}</b>, привет!\nХочешь расскажу немного о нашей компании?"
-  markup = types.InlineKeyboardMarkup()
-  button_yes = types.InlineKeyboardButton(text = 'Да', callback_data='yes')
-  markup.add(button_yes)
-  botTimeWeb.send_message(message.chat.id, first_mess, parse_mode='html', reply_markup=markup)
-  
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("фикл")
+    btn2 = types.KeyboardButton('самые изучаемые')
+    markup.add(btn1, btn2)
+    bot.send_message(message.from_user.id, "Выберите языки", reply_markup=markup)
+
+bot.polling(none_stop=True, interval=0) #обязательная для работы бота часть
 
 '''from pygrambank import Grambank
 gb = Grambank('.')
