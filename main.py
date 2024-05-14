@@ -4,8 +4,7 @@ bot = telebot.TeleBot('7133097481:AAGizdgJ2SPCFJb6KynnTn_k5ilPfbKbwLY')
 
 from telebot import types
 from langlists import most, facl
-from random import shuffle
-
+import random
 facl_list = "фикл"
 most_list = "самые изучаемые"
 @bot.message_handler(commands=['start'])
@@ -32,11 +31,15 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, f'давайте начнем {facl_list}', reply_markup=markup)  # ответ бота
 
 
-
+import csv
 def choose_language(li):
-    li = shuffle(li)
-
-
+    random.shuffle(li)
+    lang = li[0].capitalize()
+    # print(lang)
+    with open('data/draft.csv') as raw_data:
+        reader = list(csv.reader(raw_data, delimiter=','))
+        lang_data = [(line[2], line[4]) for line in reader if line[1] == lang]
+        return lang_data
 
 bot.polling(none_stop=True, interval=0) #обязательная для работы бота часть
 
