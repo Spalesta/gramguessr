@@ -1,10 +1,10 @@
 import pandas as pd
 
 # путь к нужным исходным табличкам wals (которые я загрузила предварительно)
-file_path_language_names = 'https://raw.githubusercontent.com/Spalesta/gramguessr/master/data/language_names.csv'
-file_path_parameters = 'https://raw.githubusercontent.com/Spalesta/gramguessr/master/data/parameters.csv'
-file_path_values = 'https://raw.githubusercontent.com/Spalesta/gramguessr/master/data/values.csv'
-file_path_codes = 'https://raw.githubusercontent.com/Spalesta/gramguessr/master/data/codes.csv'
+file_path_language_names = 'language_names.csv'
+file_path_parameters = 'parameters.csv'
+file_path_values = 'values.csv'
+file_path_codes = 'codes.csv'
 
 # читаем файлы с wals, в которых содержатся нужные нам данные
 language_names_df = pd.read_csv(file_path_language_names)
@@ -27,7 +27,7 @@ final_merged_df = pd.merge(merged_w_lang_names_df, codes_df, left_on='Code_ID', 
 final_merged_df.drop(['ID_x', 'ID_y', 'ID_left', 'Parameter_ID_left', 'Value', 'Code_ID', 'ID_right', 'Parameter_ID_right', 'Number', 'icon'], axis=1, inplace=True)
 
 # фильтруем какие угодно языки
-language_filter = (final_merged_df['Language_ID'] == 'rus') | (final_merged_df['Language_ID'] == 'ger') | (final_merged_df['Language_ID'] == 'eng')
+language_filter = (final_merged_df['Name_x'] == 'French') | (final_merged_df['Name_x'] == 'Swedish') | (final_merged_df['Name_x'] == 'Hebrew (modern)') | (final_merged_df['Name_x'] == 'Italian') | (final_merged_df['Name_x'] == 'German') | (final_merged_df['Name_x'] == 'Korean') | (final_merged_df['Name_x'] == 'Hindi') | (final_merged_df['Name_x'] == '') | (final_merged_df['Name_x'] == 'English') | (final_merged_df['Name_x'] == 'German') | (final_merged_df['Name_x'] == 'French') | (final_merged_df['Name_x'] == 'Spanish') | (final_merged_df['Name_x'] == 'Japanese') | (final_merged_df['Name_x'] == 'Korean') | (final_merged_df['Name_x'] == 'Italian') | (final_merged_df['Name_x'] == 'Hindi') | (final_merged_df['Name_x'] == 'Mandarin') | (final_merged_df['Name_x'] == 'Russian')
 selected_languages_df = final_merged_df[language_filter]
 
 # переименуем для удобства
@@ -38,10 +38,10 @@ selected_languages_df = selected_languages_df.rename(columns={
 })
 
 # отсортируем в алфавитном порядке
-selected_languages_df = selected_languages_df.sort_values(by='Language_ID')
+selected_languages_df = selected_languages_df.sort_values(by='Language_name')
 
 # сохраним в итоговую табличку
-selected_languages_df.to_csv('https://raw.githubusercontent.com/Spalesta/gramguessr/master/data/draft.csv', index=False)
+selected_languages_df.to_csv('draft.csv', index=False)
 
 
 ###ниже будет в комментарии пример вывода по параметру number of cases###
