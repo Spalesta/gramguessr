@@ -15,20 +15,25 @@ def startBot(message):
     markup.add(btn1, btn2)
     bot.send_message(message.from_user.id, "Выберите языки", reply_markup=markup)
 
-lang_counter = 0
-lang_list = list()
+currently_studying = {'userid': [['languages'], 0]}
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
+    global currently_studying
     if message.text == facl_list or most_list:
         if message.text == facl_list:
-            lang_list = most
+            currently_studying[message.from_user.id] = [facl, 0]
         elif message.text == most_list:
-            lang_list = facl
-        lang_counter = 0
-        markup = types.ReplyKeyboardMarkup()  # создание новых кнопок
+            currently_studying[message.from_user.id] = [most, 0]
+        markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('начать игру')
         markup.add(btn1)
-        bot.send_message(message.from_user.id, f'давайте начнем {facl_list}', reply_markup=markup)  # ответ бота
+        bot.send_message(message.from_user.id, f'давайте начнем {currently_studying[message.from_user.id][0]}', reply_markup=markup)  # ответ бота
+    if message.text == 'начать игру':
+        markup = types.ReplyKeyboardMarkup()
+        for lang in currently_studying[message.from_user.id][0]:
+            markup.add(types.KeyboardButton(lang))
+        bot.send_message(message.from_user.id, facl[0], reply_markup=markup)  # ответ бота
 
 
 import csv
@@ -43,3 +48,6 @@ def choose_language(li):
 
 bot.polling(none_stop=True, interval=0) #обязательная для работы бота часть
 
+'''
+python main.py
+'''

@@ -12,8 +12,7 @@ korean
 italian
 hindi
 mandarin
-russian
-'''.split()
+russian'''.split()
 
 facl = '''french
 swedish
@@ -21,7 +20,6 @@ Hebrew (Modern)
 italian
 german
 korean
-hindi
-'''.split('\n')
+hindi'''.split('\n')
 
 # print(*(f"(final_merged_df['Name_x'] == '{name.capitalize()}')" for name in facl + most), sep=' | ')
