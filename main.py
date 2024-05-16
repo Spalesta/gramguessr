@@ -21,10 +21,11 @@ def startbot(message):
 currently_studying = {'userid': [['languages'], 0]}
 personal_rating = {'userid': 0}
 achievements = {1: "your first correct guess!",
-                5: "you've guessed correctly 5 time so far",
+                5: "you've guessed correctly 5 times so far",
                 15: "you've guessed correctly 15 time so far",
                 50: "are you okay?",
                 100: "please hydrate"}
+quiz_mode_on = {'userid': False}
 
 
 @bot.message_handler(content_types=['sticker'])
@@ -32,48 +33,73 @@ def send_sticker_id(message):
     bot.send_message(message.chat.id, f'This sticker id: {message.sticker.file_id}')
 
 
+@bot.message_handler(commands=['info'])
+def startbot(message):
+    userid = message.from_user.id
+    if userid in quiz_mode_on and quiz_mode_on[userid]:
+        bot.send_message(userid, "Sorry, you can't do that while you're playing! Finish the game first", reply_markup=None)
+    else:
+        lang = message.text[len('/info '):]
+        bot.send_message(userid, f"Information on {lang}: {lang}", reply_markup=None)
+
+
+@bot.message_handler(commands=['end'])
+def startbot(message):
+    userid = message.from_user.id
+    if userid in quiz_mode_on and quiz_mode_on[userid]:
+        quiz_mode_on[userid] = False
+        bot.send_message(userid, f"Okay! You've guessed {currently_studying[userid][0][:currently_studying[userid][1]]}", reply_markup=None)
+    else:
+        lang = message.text[len('/info '):]
+        bot.send_message(userid, "my guy you haven't even started yet", reply_markup=None)
+
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     global currently_studying
+    userid = message.from_user.id
+
     if message.text == facl_list_message or message.text == most_list_message:
         if message.text == facl_list_message:
-            currently_studying[message.from_user.id] = [random.sample(langlists.facl, len(langlists.facl)), 0]
+            currently_studying[userid] = [random.sample(langlists.facl, len(langlists.facl)), 0]
         elif message.text == most_list_message:
-            currently_studying[message.from_user.id] = [random.sample(langlists.most, len(langlists.most)), 0]
+            currently_studying[userid] = [random.sample(langlists.most, len(langlists.most)), 0]
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(message.from_user.id, f"Okay, let's start studying "
-                                               f"{currently_studying[message.from_user.id][0]}", reply_markup=markup)
+        bot.send_message(userid, f"Okay, let's start studying "
+                                               f"{currently_studying[userid][0]}", reply_markup=markup)
     elif message.text == 'start':
         markup = types.ReplyKeyboardMarkup()
-        for lang in currently_studying[message.from_user.id][0]:
+        for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
             markup.add(types.KeyboardButton(lang))
-        bot.send_message(message.from_user.id, currently_studying[message.from_user.id][0][0], reply_markup=markup)
+        quiz_mode_on[userid] = True
+        bot.send_message(userid, currently_studying[userid][0][0], reply_markup=markup)
 
     elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
-        langlist = currently_studying[message.from_user.id][0]
-        i = currently_studying[message.from_user.id][1]
+        langlist = currently_studying[userid][0]
+        i = currently_studying[userid][1]
         if langlist[i] == message.text:  # если пользователь угадал язык правильно
-            if message.from_user.id not in personal_rating:
-                personal_rating[message.from_user.id] = 0
-            personal_rating[message.from_user.id] += 1
-            currently_studying[message.from_user.id][1] += 1
+            if userid not in personal_rating:
+                personal_rating[userid] = 0
+            personal_rating[userid] += 1
+            currently_studying[userid][1] += 1
             i += 1
             if i == len(langlist):
-                bot.send_message(message.from_user.id, f"That's right! The game's over", reply_markup=None)
+                quiz_mode_on[userid] = False
+                bot.send_message(userid, f"That's right! The game's over", reply_markup=None)
             else:
-                bot.send_message(message.from_user.id, f"That's right! Now, {langlist[i]}", reply_markup=None)
+                bot.send_message(userid, f"That's right! Now, {langlist[i]}", reply_markup=None)
 
-            if personal_rating[message.from_user.id] in achievements:
-                bot.send_message(message.from_user.id, f"_new achievement unlocked: {achievements[personal_rating[message.from_user.id]]}_", reply_markup=None, parse_mode='Markdown')
+            if personal_rating[userid] in achievements:
+                bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_", reply_markup=None, parse_mode='Markdown')
                 bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAIBHmZGKRxnyYHcBkcXUXnW07XEUejaAAJuDgACzb5RUT1kKoe5P8b9NQQ")
 
         else:
-            bot.send_message(message.from_user.id, "That's wrong :( Try again?", reply_markup=None)
+            bot.send_message(userid, "That's wrong :( Try again?", reply_markup=None)
 
     else:  # если пользователь совсем какой-то бред написал
-        bot.send_message(message.from_user.id, 'what?????', reply_markup=None)
+        bot.send_message(userid, 'what?????', reply_markup=None)
 
 
 def get_info(language_name):  # принимает название языка, возвращает текст с информацией о нем
