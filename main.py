@@ -66,7 +66,7 @@ def get_text_messages(message):
                 bot.send_message(message.from_user.id, f"That's right! Now, {langlist[i]}", reply_markup=None)
 
             if personal_rating[message.from_user.id] in achievements:
-                bot.send_message(message.from_user.id, f"__new achievement unlocked: {achievements[personal_rating[message.from_user.id]]}__", reply_markup=None, parse_mode='Markdown')
+                bot.send_message(message.from_user.id, f"_new achievement unlocked: {achievements[personal_rating[message.from_user.id]]}_", reply_markup=None, parse_mode='Markdown')
                 bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAIBHmZGKRxnyYHcBkcXUXnW07XEUejaAAJuDgACzb5RUT1kKoe5P8b9NQQ")
 
         else:
