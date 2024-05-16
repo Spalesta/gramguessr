@@ -20,7 +20,7 @@ currently_studying = {'userid': [['languages'], 0]}
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     global currently_studying
-    if message.text == facl_list or most_list:
+    if message.text == facl_list or message.text == most_list:
         if message.text == facl_list:
             currently_studying[message.from_user.id] = [random.sample(facl, len(facl)), 0]
         elif message.text == most_list:
@@ -32,8 +32,14 @@ def get_text_messages(message):
     elif message.text == 'начать игру':
         markup = types.ReplyKeyboardMarkup()
         for lang in currently_studying[message.from_user.id][0]:
+            print(lang)
             markup.add(types.KeyboardButton(lang))
         bot.send_message(message.from_user.id, facl[0], reply_markup=markup)
+    elif message.text in facl + most:
+        bot.send_message(message.from_user.id, 'неправильно вы лох', reply_markup=None)
+    else:
+        bot.send_message(message.from_user.id, 'что?????', reply_markup=None)
+
 
 
 '''import csv
