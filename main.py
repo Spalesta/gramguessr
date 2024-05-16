@@ -16,7 +16,7 @@ def startbot(message):
     btn1 = types.KeyboardButton(facl_list)
     btn2 = types.KeyboardButton(most_list)
     markup.add(btn1, btn2)
-    bot.send_message(message.from_user.id, "Выберите языки", reply_markup=markup)
+    bot.send_message(message.from_user.id, "please choose the languages you'd like to study:", reply_markup=markup)
 
 
 currently_studying = {'userid': [['languages'], 0]}
@@ -34,31 +34,31 @@ def get_text_messages(message):
         btn1 = types.KeyboardButton('начать игру')
         markup.add(btn1)
         bot.send_message(message.from_user.id, f'давайте начнем {currently_studying[message.from_user.id][0]}',
-                         reply_markup=markup)  # ответ бота
+                         reply_markup=markup)
     elif message.text == 'начать игру':
         markup = types.ReplyKeyboardMarkup()
         for lang in currently_studying[message.from_user.id][0]:
-            print(lang)
             markup.add(types.KeyboardButton(lang))
-        bot.send_message(message.from_user.id, langlists.facl[0], reply_markup=markup)
-    elif message.text in langlists.facl + langlists.most:
-        bot.send_message(message.from_user.id, 'неправильно вы лох', reply_markup=None)
-    else:
-        bot.send_message(message.from_user.id, 'что?????', reply_markup=None)
+        bot.send_message(message.from_user.id, currently_studying[message.from_user.id][0][0], reply_markup=markup)
+    elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
+        langlist = currently_studying[message.from_user.id][0]
+        i = currently_studying[message.from_user.id][1]
+        if langlist[i] == message.text:
+            currently_studying[message.from_user.id][1] += 1
+            i += 1
+            if i == len(langlist):
+                bot.send_message(message.from_user.id, f"that's right! the game's over", reply_markup=None)
+            else:
+                bot.send_message(message.from_user.id, f"that's right! now, {langlist[i]}", reply_markup=None)
+        else:
+            print(langlist, i)
+            print(message.text)
+            bot.send_message(message.from_user.id, 'wrong :(', reply_markup=None)
+    else:  # если пользователь совсем какой-то бред написал
+        bot.send_message(message.from_user.id, 'what?????', reply_markup=None)
 
 
-'''import csv
-def choose_language(li):
-    random.shuffle(li)
-    lang = li[0].capitalize()
-    # print(lang)
-    with open('data/draft.csv') as raw_data:
-        reader = list(csv.reader(raw_data, delimiter=','))
-        lang_data = [(line[2], line[4]) for line in reader if line[1] == lang]
-        return lang_data'''
-
-bot.polling(none_stop=True, interval=0)  # обязательная для работы бота часть
-
+bot.polling(none_stop=True, interval=0)
 '''
 python main.py
 '''
