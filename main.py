@@ -2,9 +2,10 @@ import telebot
 from telebot import types
 import langlists
 import random
-from langlists import start_msg
 
-bot = telebot.TeleBot('7133097481:AAGizdgJ2SPCFJb6KynnTn_k5ilPfbKbwLY')
+from config import *
+
+bot = telebot.TeleBot(BOT_TOKEN)
 facl_list_message = "I want to study FaCL languages!"
 most_list_message = "I want to study top-10 most learned languages!"
 
@@ -28,7 +29,6 @@ achievements = {1: "your first correct guess!",
                 100: "please hydrate"}
 quiz_mode_on = {'userid': False}
 fail_count = {'userid': 0}
-
 
 @bot.message_handler(content_types=['sticker'])
 def send_sticker_id(message):
@@ -122,20 +122,23 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, start_msg(currently_studying[userid][0]), reply_markup=markup, parse_mode='Markdown')
+        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see "
+                                 f"more information on any of these languages before we start, type /info and the name "
+                                 f"of the language you want to learn more about;\nif you want to add any languages, we can do that: type /add and the name of the language;\nif you want to removes any languages from the list, we can also do that: type /remove and the name of the language;"
+                                 f"\nelse just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
+    
     elif message.text == 'start':
-        fail_count[userid] = 0
         markup = types.ReplyKeyboardMarkup()
-        for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
+        for index, lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
             markup.add(types.KeyboardButton(lang))
         quiz_mode_on[userid] = True
         bot.send_message(userid, currently_studying[userid][0][0], reply_markup=markup)
 
     elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
-        fail_count[userid] = 0
         langlist = currently_studying[userid][0]
         i = currently_studying[userid][1]
-        if langlist[i] == message.text:  # если пользователь угадал язык правильно
+        
+        if langlist[i] == message.text.strip():  # если пользователь угадал язык правильно
             if userid not in personal_rating:
                 personal_rating[userid] = 0
             personal_rating[userid] += 1
@@ -145,19 +148,30 @@ def get_text_messages(message):
                 quiz_mode_on[userid] = False
                 bot.send_message(userid, f"That's right! The game's over", reply_markup=None)
             else:
-                bot.send_message(userid, f"That's right! Now, {langlist[i]}", reply_markup=None)
+                bot.send_message(userid, f"That's right!\n<b>Now, {langlist[i]}</b>\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.", reply_markup=None, parse_mode="HTML")
 
             if personal_rating[userid] in achievements:
                 bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_", reply_markup=None, parse_mode='Markdown')
                 bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAIBHmZGKRxnyYHcBkcXUXnW07XEUejaAAJuDgACzb5RUT1kKoe5P8b9NQQ")
 
         else:  # если не угадал язык
-            if userid not in fail_count:
+            if userid not in fail_count.keys():
+                fail_count[userid] = 1
+            else:
+                fail_count[userid] += 1
+
+            if fail_count[userid] >= LIVES_AMOUNT:
+                markup = types.ReplyKeyboardMarkup()
+                markup.row("start")
+
+                bot.send_message(userid, f"That's wrong :(\nYou ran out of all your lives.\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.\nTo try again press button below or print /start.", reply_markup=markup)
                 fail_count[userid] = 0
-            fail_count[userid] += 1
-            if fail_count == 4:
-                bot.send_message(userid, "Type /hint if you'd like a hint ;3", reply_markup=None)
-            bot.send_message(userid, "That's wrong :( Try again?", reply_markup=None)
+
+            else:
+
+                if fail_count == HINT_APPLY_AMOUNT:
+                    bot.send_message(userid, "Type /hint if you'd like a hint ;3", reply_markup=None)
+                bot.send_message(userid, f"That's wrong :( Try again?\nYou've got <b>{fail_count[userid]}</b> fails.\nYou have only {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.", reply_markup=None, parse_mode='HTML')
 
     else:  # если пользователь совсем какой-то бред написал
         bot.send_message(userid, 'what?????', reply_markup=None)
