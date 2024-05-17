@@ -26,6 +26,7 @@ achievements = {1: "your first correct guess!",
                 50: "are you okay?",
                 100: "please hydrate"}
 quiz_mode_on = {'userid': False}
+fail_count = {'userid': 0}
 
 
 @bot.message_handler(content_types=['sticker'])
@@ -40,8 +41,11 @@ def info(message):
         bot.send_message(userid, "Sorry, you can't do that while you're playing! "
                                  "Finish the game first", reply_markup=None)
     else:
-        lang = message.text[len('/info '):]
-        bot.send_message(userid, f"Information on {lang}: {lang}", reply_markup=None)
+        if len(message.text) <= len('/info '):
+            bot.send_message(userid, f"What language would you like to learn more about? Please type /info *and* the name of the language", reply_markup=None, parse_mode='Markdown')
+        else:
+            lang = message.text[len('/info '):]
+            bot.send_message(userid, f"Information on {lang}: {lang}", reply_markup=None)
 
 
 @bot.message_handler(commands=['end'])
@@ -53,6 +57,21 @@ def end(message):
                                  f"{currently_studying[userid][0][:currently_studying[userid][1]]}", reply_markup=None)
     else:
         bot.send_message(userid, "my guy you haven't even started yet", reply_markup=None)
+
+
+@bot.message_handler(commands=['help'])
+def help(message):
+    userid = message.from_user.id
+    bot.send_message(userid, "", reply_markup=None)
+
+
+@bot.message_handler(commands=['hint'])
+def help(message):
+    userid = message.from_user.id
+    if userid in quiz_mode_on and quiz_mode_on[userid]:
+        bot.send_message(userid, f"This one is {currently_studying[userid][0][currently_studying[userid][1]]}", reply_markup=None)
+    else:
+        bot.send_message(userid, "my guy you aren't playing yet what do you want a hint at????", reply_markup=None)
 
 
 @bot.message_handler(content_types=['text'])
@@ -68,9 +87,9 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, f"Okay, let's start studying "
-                                               f"{currently_studying[userid][0]}", reply_markup=markup)
+        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see more information on any of these languages before we start, type /info and the name of the language you want to learn more about, else just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
     elif message.text == 'start':
+        fail_count[userid] = 0
         markup = types.ReplyKeyboardMarkup()
         for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
             markup.add(types.KeyboardButton(lang))
@@ -96,7 +115,10 @@ def get_text_messages(message):
                 bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_", reply_markup=None, parse_mode='Markdown')
                 bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAIBHmZGKRxnyYHcBkcXUXnW07XEUejaAAJuDgACzb5RUT1kKoe5P8b9NQQ")
 
-        else:
+        else:  # если не угадал язык
+            if userid not in fail_count:
+                fail_count[userid] = 0
+            fail_count[userid] += 1
             bot.send_message(userid, "That's wrong :( Try again?", reply_markup=None)
 
     else:  # если пользователь совсем какой-то бред написал
