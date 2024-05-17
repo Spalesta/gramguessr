@@ -64,7 +64,7 @@ language_filter = (
     ((final_merged_df['Language_ID'] == 'spa') & 
     (final_merged_df['Name_x'] == 'Spanish'))|
 
-    ((final_merged_df['Language_ID'] == 'jap') & 
+    ((final_merged_df['Language_ID'] == 'jpn') & 
     (final_merged_df['Name_x'] == 'Japanese'))|
 
     ((final_merged_df['Language_ID'] == 'kor') & 
