@@ -9,10 +9,18 @@ from config import *
 bot = telebot.TeleBot(BOT_TOKEN)
 facl_list_message = "I want to study FaCL languages!"
 most_list_message = "I want to study top-10 most learned languages!"
-
+rating = {}
+fail_count = {}
 
 @bot.message_handler(commands=['start'])
 def startbot(message):
+    userid = message.from_user.username
+    if userid not in rating.keys():
+        rating[userid] = 0
+
+    if message.from_user.id not in fail_count.keys():
+        fail_count[message.from_user.id] = 0
+
     markup = types.ReplyKeyboardMarkup()
     btn1 = types.KeyboardButton(facl_list_message)
     btn2 = types.KeyboardButton(most_list_message)
@@ -29,7 +37,7 @@ achievements = {1: "your first correct guess!",
                 50: "are you okay?",
                 100: "please hydrate"}
 quiz_mode_on = {'userid': False}
-fail_count = {'userid': 0}
+
 
 @bot.message_handler(content_types=['sticker'])
 def send_sticker_id(message):
@@ -60,6 +68,17 @@ def end(message):
                                  f"{currently_studying[userid][0][:currently_studying[userid][1]]}", reply_markup=None)
     else:
         bot.send_message(userid, "my guy you haven't even started yet", reply_markup=None)
+
+
+@bot.message_handler(commands=['rating'])
+def get_rate(message):
+    userid = message.from_user.id
+    sorted_rate = dict(reversed(sorted(rating.items(), key=lambda x:x[1])))
+    end = "Current rating:\n"
+    for index in range(len(sorted_rate.items())):
+        end += f"{index + 1}) <b>{list(sorted_rate.items())[index][0]}</b> - <b>{list(sorted_rate.items())[index][1]}</b>"
+
+    bot.send_message(userid, end, reply_markup=None, parse_mode="HTML")
 
 
 @bot.message_handler(commands=['help'])
@@ -131,16 +150,21 @@ def get_text_messages(message):
     
     elif message.text == 'start':
         markup = types.ReplyKeyboardMarkup()
-        for index, lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
+        for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
             markup.add(types.KeyboardButton(lang))
         quiz_mode_on[userid] = True
-        bot.send_message(userid, currently_studying[userid][0][0], reply_markup=markup)
+
+        lang_info = get_info(currently_studying[userid][0][0])
+
+        bot.send_message(userid, lang_info, reply_markup=markup, parse_mode="HTML")
 
     elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
         langlist = currently_studying[userid][0]
         i = currently_studying[userid][1]
         
         if langlist[i] == message.text.strip():  # если пользователь угадал язык правильно
+            rating[message.from_user.username] += 1
+
             if userid not in personal_rating:
                 personal_rating[userid] = 0
             personal_rating[userid] += 1
@@ -150,7 +174,9 @@ def get_text_messages(message):
                 quiz_mode_on[userid] = False
                 bot.send_message(userid, f"That's right! The game's over", reply_markup=None)
             else:
-                bot.send_message(userid, f"That's right!\n<b>Now, {langlist[i]}</b>\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.", reply_markup=None, parse_mode="HTML")
+                lang = langlist[i]
+                info = get_info(lang)
+                bot.send_message(userid, f"That's right!\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.\n\n<b>Now, {info}</b>", reply_markup=None, parse_mode="HTML")
 
             if personal_rating[userid] in achievements:
                 bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_", reply_markup=None, parse_mode='Markdown')
@@ -184,9 +210,13 @@ def get_info(language_name):  # принимает название языка, 
     data["Language_name"] = data["Language_name"].apply(lambda x: x.lower())
     data.fillna("-", inplace=True)
 
-    query = data[(data["Language_name"] == language_name.lower()) | (data["Language_ID"] == language_name.lower())].sample(GET_INFO_AMOUNT)
+    query = data[(data["Language_name"] == language_name.lower()) | (data["Language_ID"] == language_name.lower())]
+    if query.shape[0] >= GET_INFO_AMOUNT:
+        query = query.sample(GET_INFO_AMOUNT)
+
     if query.shape[0] == 0:
         return f"There is no data for {language_name}"
+
     else:
         end_msg = ""
         for _, row in query.iterrows():
