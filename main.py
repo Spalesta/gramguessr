@@ -97,6 +97,7 @@ def get_text_messages(message):
         bot.send_message(userid, currently_studying[userid][0][0], reply_markup=markup)
 
     elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
+        fail_count[userid] = 0
         langlist = currently_studying[userid][0]
         i = currently_studying[userid][1]
         if langlist[i] == message.text:  # если пользователь угадал язык правильно
@@ -119,6 +120,8 @@ def get_text_messages(message):
             if userid not in fail_count:
                 fail_count[userid] = 0
             fail_count[userid] += 1
+            if fail_count == 4:
+                bot.send_message(userid, "Type /hint if you'd like a hint ;3", reply_markup=None)
             bot.send_message(userid, "That's wrong :( Try again?", reply_markup=None)
 
     else:  # если пользователь совсем какой-то бред написал
