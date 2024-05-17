@@ -2,6 +2,7 @@ import telebot
 from telebot import types
 import langlists
 import random
+from langlists import start_msg
 
 bot = telebot.TeleBot('7133097481:AAGizdgJ2SPCFJb6KynnTn_k5ilPfbKbwLY')
 facl_list_message = "I want to study FaCL languages!"
@@ -121,10 +122,7 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see "
-                                 f"more information on any of these languages before we start, type /info and the name "
-                                 f"of the language you want to learn more about;\nif you want to add any languages, we can do that: type /add and the name of the language;\nif you want to removes any languages from the list, we can also do that: type /remove and the name of the language;"
-                                 f"\nelse just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
+        bot.send_message(userid, start_msg(currently_studying[userid][0]), reply_markup=markup, parse_mode='Markdown')
     elif message.text == 'start':
         fail_count[userid] = 0
         markup = types.ReplyKeyboardMarkup()
