@@ -4,6 +4,7 @@ import langlists
 import random
 from config import *
 from langlists import start_msg
+import csv
 
 bot = telebot.TeleBot(BOT_TOKEN)
 facl_list_message = "I want to study FaCL languages!"
@@ -47,7 +48,8 @@ def info(message):
             bot.send_message(userid, f"What language would you like to learn more about? Please type /info *and* the name of the language", reply_markup=None, parse_mode='Markdown')
         else:
             lang = message.text[len('/info '):]
-            bot.send_message(userid, f"Information on {lang}: {lang}", reply_markup=None)
+            language_info = get_info(lang)
+            bot.send_message(userid, language_info, reply_markup=None)
 
 
 @bot.message_handler(commands=['end'])
@@ -177,7 +179,19 @@ def get_text_messages(message):
 
 
 def get_info(language_name):  # принимает название языка, возвращает текст с информацией о нем
-    pass
+    with open('draft.csv') as csvfile:
+        reader = csv.DictReader(csvfile)
+        info = []
+        for row in reader:
+            if row['Language_name'].lower() == language_name.lower():
+                parameter = row['Parameter']
+                value = row['Value']
+                description = row['Description']
+                info.append(f"Parameter: {parameter}\nValue: {value}\nDescription: {description}\n")
+        if info:
+            return '\n'.join(info)
+        else:
+            return f"There is no data for {language_name}"
 
 
 bot.polling(none_stop=True, interval=0)
