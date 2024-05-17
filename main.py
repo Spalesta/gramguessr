@@ -34,23 +34,24 @@ def send_sticker_id(message):
 
 
 @bot.message_handler(commands=['info'])
-def startbot(message):
+def info(message):
     userid = message.from_user.id
     if userid in quiz_mode_on and quiz_mode_on[userid]:
-        bot.send_message(userid, "Sorry, you can't do that while you're playing! Finish the game first", reply_markup=None)
+        bot.send_message(userid, "Sorry, you can't do that while you're playing! "
+                                 "Finish the game first", reply_markup=None)
     else:
         lang = message.text[len('/info '):]
         bot.send_message(userid, f"Information on {lang}: {lang}", reply_markup=None)
 
 
 @bot.message_handler(commands=['end'])
-def startbot(message):
+def end(message):
     userid = message.from_user.id
     if userid in quiz_mode_on and quiz_mode_on[userid]:
         quiz_mode_on[userid] = False
-        bot.send_message(userid, f"Okay! You've guessed {currently_studying[userid][0][:currently_studying[userid][1]]}", reply_markup=None)
+        bot.send_message(userid, f"Okay! You've guessed "
+                                 f"{currently_studying[userid][0][:currently_studying[userid][1]]}", reply_markup=None)
     else:
-        lang = message.text[len('/info '):]
         bot.send_message(userid, "my guy you haven't even started yet", reply_markup=None)
 
 
