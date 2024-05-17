@@ -74,6 +74,40 @@ def help(message):
         bot.send_message(userid, "my guy you aren't playing yet what do you want a hint at????", reply_markup=None)
 
 
+@bot.message_handler(commands=['add'])
+def add(message):
+    userid = message.from_user.id
+    if userid in quiz_mode_on and quiz_mode_on[userid]:
+        bot.send_message(userid, "Sorry, you can't do that while you're playing! "
+                                 "Finish the game first", reply_markup=None)
+    else:
+        if len(message.text) <= len('/add '):
+            bot.send_message(userid,
+                             f"What language would you like to add? Please type /add *and* the name of the language",
+                             reply_markup=None, parse_mode='Markdown')
+        else:
+            lang = message.text[len('/add '):]
+            bot.send_message(userid, f"Added {lang} to current to-study list!", reply_markup=None)
+            currently_studying[userid][0].append(lang)
+
+
+@bot.message_handler(commands=['remove'])
+def remove(message):
+    userid = message.from_user.id
+    if userid in quiz_mode_on and quiz_mode_on[userid]:
+        bot.send_message(userid, "Sorry, you can't do that while you're playing! "
+                                 "Finish the game first", reply_markup=None)
+    else:
+        if len(message.text) <= len('/remove '):
+            bot.send_message(userid,
+                             f"What language would you like to remove? Please type /remove *and* the name of the language",
+                             reply_markup=None, parse_mode='Markdown')
+        else:
+            lang = message.text[len('/remove '):]
+            bot.send_message(userid, f"Removed {lang} from current to-study list!", reply_markup=None)
+            currently_studying[userid][0] = [item for item in currently_studying[userid][0] if item != lang]
+
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
     global currently_studying
@@ -87,7 +121,10 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see more information on any of these languages before we start, type /info and the name of the language you want to learn more about, else just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
+        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see "
+                                 f"more information on any of these languages before we start, type /info and the name "
+                                 f"of the language you want to learn more about;\nif you want to add any languages, we can do that: type /add and the name of the language;\nif you want to removes any languages from the list, we can also do that: type /remove and the name of the language;"
+                                 f"\nelse just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
     elif message.text == 'start':
         fail_count[userid] = 0
         markup = types.ReplyKeyboardMarkup()
