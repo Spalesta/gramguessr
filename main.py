@@ -2,9 +2,9 @@ import telebot
 from telebot import types
 import langlists
 import random
+import pandas as pd
+
 from config import *
-from langlists import start_msg
-import csv
 
 bot = telebot.TeleBot(BOT_TOKEN)
 facl_list_message = "I want to study FaCL languages!"
@@ -31,7 +31,6 @@ achievements = {1: "your first correct guess!",
 quiz_mode_on = {'userid': False}
 fail_count = {'userid': 0}
 
-
 @bot.message_handler(content_types=['sticker'])
 def send_sticker_id(message):
     bot.send_message(message.chat.id, f'This sticker id: {message.sticker.file_id}')
@@ -44,12 +43,12 @@ def info(message):
         bot.send_message(userid, "Sorry, you can't do that while you're playing! "
                                  "Finish the game first", reply_markup=None)
     else:
-        if len(message.text) <= len('/info '):
+        if len(message.text.strip()) == len('/info'):
             bot.send_message(userid, f"What language would you like to learn more about? Please type /info *and* the name of the language", reply_markup=None, parse_mode='Markdown')
         else:
             lang = message.text[len('/info '):]
-            language_info = get_info(lang)
-            bot.send_message(userid, language_info, reply_markup=None)
+            info = get_info(lang)
+            bot.send_message(userid, f"Information on <b>{lang}</b>:\n\n{info}", reply_markup=None, parse_mode="HTML")
 
 
 @bot.message_handler(commands=['end'])
@@ -125,8 +124,10 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, start_msg(currently_studying[userid][0]), reply_markup=markup, parse_mode='Markdown')
-
+        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see "
+                                 f"more information on any of these languages before we start, type /info and the name "
+                                 f"of the language you want to learn more about;\nif you want to add any languages, we can do that: type /add and the name of the language;\nif you want to removes any languages from the list, we can also do that: type /remove and the name of the language;"
+                                 f"\nelse just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
     
     elif message.text == 'start':
         markup = types.ReplyKeyboardMarkup()
@@ -179,20 +180,18 @@ def get_text_messages(message):
 
 
 def get_info(language_name):  # принимает название языка, возвращает текст с информацией о нем
-    with open('draft.csv') as csvfile:
-        reader = csv.DictReader(csvfile)
-        info = []
-        for row in reader:
-            if row['Language_name'].lower() == language_name.lower():
-                parameter = row['Parameter']
-                value = row['Value']
-                description = row['Description']
-                info.append(f"Parameter: {parameter}\nValue: {value}\nDescription: {description}\n")
-        if info:
-            return '\n'.join(info)
-        else:
-            return f"There is no data for {language_name}"
+    data = pd.read_csv('./data/draft.csv')
+    data["Language_name"] = data["Language_name"].apply(lambda x: x.lower())
+    data.fillna("-", inplace=True)
 
+    query = data[(data["Language_name"] == language_name.lower()) | (data["Language_ID"] == language_name.lower())].sample(GET_INFO_AMOUNT)
+    if query.shape[0] == 0:
+        return f"There is no data for {language_name}"
+    else:
+        end_msg = ""
+        for _, row in query.iterrows():
+            end_msg += f'<b>Parameter:</b> {row["Parameter"]}\n<b>Value:</b> {row["Value"]}\n<b>Description:</b> {row["Description"]}\n---\n'
+        return end_msg
 
 bot.polling(none_stop=True, interval=0)
 '''
