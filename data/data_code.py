@@ -12,13 +12,28 @@ parameters_df = pd.read_csv(file_path_parameters)
 values_df = pd.read_csv(file_path_values)
 codes_df = pd.read_csv(file_path_codes)
 
+# меняем ячейки где несколько языковых кодов на один для корректного склеивания табличек
+language_names_df['Language_ID'] = language_names_df['Language_ID'].apply(lambda x: 
+    'ger' if isinstance(x, str) and 'ger' in x else 
+    ('spa' if isinstance(x, str) and 'spa' in x else 
+    ('mnd' if isinstance(x, str) and 'mnd' in x else 
+    ('ita' if isinstance(x, str) and 'ita' in x else 
+    ('fre' if isinstance(x, str) and 'fre' in x else 
+    ('heb' if isinstance(x, str) and 'heb' in x else 
+    ('swe' if isinstance(x, str) and 'swe' in x else x)))))))
+
+# сохраняем обновленную табличку language_names
+language_names_df.to_csv('/final_language_names.csv', index=False)
+file_path_final_language_names = '/content/drive/My Drive/hse_final_project/final_language_names.csv'
+final_language_names_df = pd.read_csv(file_path_final_language_names)
+
 # объединяем таблички parameters и values по ID и Parameter_ID, тк они одни и те же. по способу outer, значит ни одна строка не будет потеряна
 merged_param_val_df = pd.merge(parameters_df, values_df, left_on='ID', right_on='Parameter_ID', how='outer')
 # убираем ненужные столбцы
 merged_param_val_df.drop(['Comment', 'Source', 'Example_ID', 'Description', 'ColumnSpec', 'Chapter_ID'], axis=1, inplace=True)
 
-# объединяем merged_param_val_df с language_names по Language_ID
-merged_w_lang_names_df = pd.merge(language_names_df, merged_param_val_df, left_on='Language_ID', right_on='Language_ID', how='outer')
+# объединяем merged_param_val_df с final_language_names по Language_ID
+merged_w_lang_names_df = pd.merge(final_language_names_df, merged_param_val_df, left_on='Language_ID', right_on='Language_ID', how='outer')
 # убираем ненужные столбцы
 merged_w_lang_names_df.drop(['Provider'], axis=1, inplace=True)
 
@@ -29,9 +44,44 @@ final_merged_df.drop(['ID_x', 'ID_y', 'ID_left', 'Parameter_ID_left', 'Value', '
 # убираем дублирующиеся строки
 final_merged_df = final_merged_df.drop_duplicates()
 
-# фильтруем какие угодно языки
-language_filter = (final_merged_df['Name_x'] == 'French') | (final_merged_df['Name_x'] == 'Swedish') | (final_merged_df['Name_x'] == 'Hebrew (modern)') | (final_merged_df['Name_x'] == 'English') | (final_merged_df['Name_x'] == 'German') | (final_merged_df['Name_x'] == 'Spanish') | (final_merged_df['Name_x'] == 'Japanese') | (final_merged_df['Name_x'] == 'Korean') | (final_merged_df['Name_x'] == 'Italian') | (final_merged_df['Name_x'] == 'Hindi') | (final_merged_df['Name_x'] == 'Mandarin') | (final_merged_df['Name_x'] == 'Russian')
-selected_languages_df = final_merged_df[language_filter]
+# фильтруем нужные нам языки по language_id и по language_name чтобы нам не попадались диалекты и варианты языков
+language_filter = (
+    ((final_merged_df['Language_ID'] == 'fra') &
+     (final_merged_df['Name_x'] == 'French'))|
+    
+    ((final_merged_df['Language_ID'] == 'swe') &
+     (final_merged_df['Name_x'] == 'Swedish'))|
+    
+    ((final_merged_df['Language_ID'] == 'heb') & 
+    (final_merged_df['Name_x'] == 'Hebrew (Modern)'))|
+
+    ((final_merged_df['Language_ID'] == 'eng') & 
+    (final_merged_df['Name_x'] == 'English'))|
+
+    ((final_merged_df['Language_ID'] == 'ger') & 
+    (final_merged_df['Name_x'] == 'German'))|
+
+    ((final_merged_df['Language_ID'] == 'spa') & 
+    (final_merged_df['Name_x'] == 'Spanish'))|
+
+    ((final_merged_df['Language_ID'] == 'jap') & 
+    (final_merged_df['Name_x'] == 'Japanese'))|
+
+    ((final_merged_df['Language_ID'] == 'kor') & 
+    (final_merged_df['Name_x'] == 'Korean'))|
+
+    ((final_merged_df['Language_ID'] == 'ita') & 
+    (final_merged_df['Name_x'] == 'Italian'))|
+
+    ((final_merged_df['Language_ID'] == 'hin') & 
+    (final_merged_df['Name_x'] == 'Hindi'))|
+
+    ((final_merged_df['Language_ID'] == 'mnd') & 
+    (final_merged_df['Name_x'] == 'Mandarin'))|
+
+    ((final_merged_df['Language_ID'] == 'rus') & 
+    (final_merged_df['Name_x'] == 'Russian'))
+)
 
 # переименуем для удобства
 selected_languages_df = selected_languages_df.rename(columns={
@@ -45,13 +95,3 @@ selected_languages_df = selected_languages_df.sort_values(by='Language_name')
 
 # сохраним в итоговую табличку
 selected_languages_df.to_csv('draft.csv', index=False)
-
-
-###ниже будет в комментарии пример вывода по параметру number of cases###
-
-
-# number_of_cases_df = selected_languages_df[selected_languages_df['Parameter'] == 'Number of Cases']
-
-# print("Number of Cases for Russian:", number_of_cases_df[number_of_cases_df['Language_ID'] == 'rus']['Value'].values[0])
-# print("Number of Cases for German:", number_of_cases_df[number_of_cases_df['Language_ID'] == 'ger']['Value'].values[0])
-# print("Number of Cases for English:", number_of_cases_df[number_of_cases_df['Language_ID'] == 'eng']['Value'].values[0])
