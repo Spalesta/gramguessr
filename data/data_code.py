@@ -44,44 +44,15 @@ final_merged_df.drop(['ID_x', 'ID_y', 'ID_left', 'Parameter_ID_left', 'Value', '
 # убираем дублирующиеся строки
 final_merged_df = final_merged_df.drop_duplicates()
 
-# фильтруем нужные нам языки по language_id и по language_name чтобы нам не попадались диалекты и варианты языков
-language_filter = (
-    ((final_merged_df['Language_ID'] == 'fra') &
-     (final_merged_df['Name_x'] == 'French'))|
-    
-    ((final_merged_df['Language_ID'] == 'swe') &
-     (final_merged_df['Name_x'] == 'Swedish'))|
-    
-    ((final_merged_df['Language_ID'] == 'heb') & 
-    (final_merged_df['Name_x'] == 'Hebrew (Modern)'))|
-
-    ((final_merged_df['Language_ID'] == 'eng') & 
-    (final_merged_df['Name_x'] == 'English'))|
-
-    ((final_merged_df['Language_ID'] == 'ger') & 
-    (final_merged_df['Name_x'] == 'German'))|
-
-    ((final_merged_df['Language_ID'] == 'spa') & 
-    (final_merged_df['Name_x'] == 'Spanish'))|
-
-    ((final_merged_df['Language_ID'] == 'jap') & 
-    (final_merged_df['Name_x'] == 'Japanese'))|
-
-    ((final_merged_df['Language_ID'] == 'kor') & 
-    (final_merged_df['Name_x'] == 'Korean'))|
-
-    ((final_merged_df['Language_ID'] == 'ita') & 
-    (final_merged_df['Name_x'] == 'Italian'))|
-
-    ((final_merged_df['Language_ID'] == 'hin') & 
-    (final_merged_df['Name_x'] == 'Hindi'))|
-
-    ((final_merged_df['Language_ID'] == 'mnd') & 
-    (final_merged_df['Name_x'] == 'Mandarin'))|
-
-    ((final_merged_df['Language_ID'] == 'rus') & 
-    (final_merged_df['Name_x'] == 'Russian'))
-)
+# фильтруем нужные нам языки по language_id чтобы не попадались диалекты
+language_names_df['Language_ID'] = language_names_df['Language_ID'].apply(lambda x: 
+    'ger' if 'ger' in x else 
+    ('spa' if 'spa' in x else 
+    ('mnd' if 'mnd' in x else 
+    ('ita' if 'ita' in x else 
+    ('fre' if 'fre' in x else 
+    ('heb' if 'heb' in x else 
+    ('swe' if 'swe' in x else x))))))))
 
 # переименуем для удобства
 selected_languages_df = selected_languages_df.rename(columns={
