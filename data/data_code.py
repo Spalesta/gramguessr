@@ -23,8 +23,8 @@ language_names_df['Language_ID'] = language_names_df['Language_ID'].apply(lambda
     ('swe' if isinstance(x, str) and 'swe' in x else x)))))))
 
 # сохраняем обновленную табличку language_names
-language_names_df.to_csv('/final_language_names.csv', index=False)
-file_path_final_language_names = '/content/drive/My Drive/hse_final_project/final_language_names.csv'
+language_names_df.to_csv('final_language_names.csv', index=False)
+file_path_final_language_names = 'final_language_names.csv'
 final_language_names_df = pd.read_csv(file_path_final_language_names)
 
 # объединяем таблички parameters и values по ID и Parameter_ID, тк они одни и те же. по способу outer, 
