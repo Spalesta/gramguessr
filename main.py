@@ -106,7 +106,7 @@ def hint(message):
         bot.send_message(userid, "my guy you aren't playing yet what do you want a hint at????", reply_markup=None)
 
 
-@bot.message_handler(commands=['add'])
+'''@bot.message_handler(commands=['add'])
 def add(message):
     userid = message.from_user.id
     if userid in quiz_mode_on and quiz_mode_on[userid]:
@@ -120,7 +120,7 @@ def add(message):
         else:
             lang = message.text[len('/add '):]
             bot.send_message(userid, f"Added {lang} to current to-study list!", reply_markup=None)
-            currently_studying[userid][0].append(lang)
+            currently_studying[userid][0].append(lang)'''
 
 
 @bot.message_handler(commands=['remove'])
