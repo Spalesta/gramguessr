@@ -3,7 +3,6 @@ from telebot import types
 import langlists
 import random
 import pandas as pd
-
 from config import *
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -143,10 +142,7 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, f"Okay, let's start studying {currently_studying[userid][0]}! If you want to see "
-                                 f"more information on any of these languages before we start, type /info and the name "
-                                 f"of the language you want to learn more about;\nif you want to add any languages, we can do that: type /add and the name of the language;\nif you want to removes any languages from the list, we can also do that: type /remove and the name of the language;"
-                                 f"\nelse just press _start_ :3", reply_markup=markup, parse_mode='Markdown')
+        bot.send_message(userid, langlists.start_msg(currently_studying[userid][0]), reply_markup=markup, parse_mode='Markdown')
     
     elif message.text == 'start':
         markup = types.ReplyKeyboardMarkup()
@@ -176,7 +172,7 @@ def get_text_messages(message):
             else:
                 lang = langlist[i]
                 info = get_info(lang)
-                bot.send_message(userid, f"That's right!\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.\n\n<b>Now, {info}</b>", reply_markup=None, parse_mode="HTML")
+                bot.send_message(userid, f"That's right!\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.\n\nNow,\n{info}", reply_markup=None, parse_mode="HTML")
 
             if personal_rating[userid] in achievements:
                 bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_", reply_markup=None, parse_mode='Markdown')
@@ -220,7 +216,7 @@ def get_info(language_name):  # принимает название языка, 
     else:
         end_msg = ""
         for _, row in query.iterrows():
-            end_msg += f'<b>Parameter:</b> {row["Parameter"]}\n<b>Value:</b> {row["Value"]}\n<b>Description:</b> {row["Description"]}\n---\n'
+            end_msg += f'<b>{row["Parameter"]}:</b>\n{row["Description"]}\n---\n'
         return end_msg
 
 bot.polling(none_stop=True, interval=0)
