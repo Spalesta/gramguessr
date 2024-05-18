@@ -25,6 +25,8 @@ langlists.py -- это два списка используемых языков
 1. данные о языках: https://wals.info/
 2. "каркас" бота мы брали отсюда: https://habr.com/ru/articles/442800/
 3. отсюда кусочек, который отвечает на стикеры: https://qna.habr.com/q/1030694
+4. помогло сориентироваться в лямбда-функциях: https://www.geeksforgeeks.org/how-to-use-if-else-elif-in-python-lambda-functions/
+5. первая статья, которая породила за собой кучу других допвопросов, но дала первое представление о скиллах и штуках, нужных для создания таблички: https://skillbox.ru/media/code/pandas-dataframe-kak-upoitelno-rabotat-s-dannymi/
 
 ## список участников
 Колотева М.:
