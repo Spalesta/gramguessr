@@ -97,7 +97,7 @@ def help(message):
 
 
 @bot.message_handler(commands=['hint'])
-def help(message):
+def hint(message):
     userid = message.from_user.id
     if userid in quiz_mode_on and quiz_mode_on[userid]:
         bot.send_message(userid, f"This one is {currently_studying[userid][0][currently_studying[userid][1]]}",
