@@ -28,7 +28,9 @@ def startbot(message):
     btn2 = types.KeyboardButton(most_list_message)
     markup.add(btn1, btn2)
     bot.send_message(message.from_user.id,
-                     "Please choose the list of languages you'd like to study:", reply_markup=markup)
+                     "Hi, this is @Gram_guessr_bot, a bot that will help you learn some language's grammatical "
+                     "(and more) features! Please choose the list of languages you'd "
+                     "like to study:", reply_markup=markup)
 
 
 currently_studying = {'userid': [['languages'], 0]}
@@ -167,7 +169,7 @@ def get_text_messages(message):
                 markup.add(types.KeyboardButton(lang))
             quiz_mode_on[userid] = True
 
-            lang_info = get_info(currently_studying[userid][0][0])
+            lang_info = 'Which language has the following features?\n' + get_info(currently_studying[userid][0][0])
 
             bot.send_message(userid, lang_info, reply_markup=markup, parse_mode="HTML")
 
@@ -194,7 +196,8 @@ def get_text_messages(message):
                 info = get_info(lang)
                 n = ('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])
                 bot.send_message(userid,
-                                 f"That's right!\nYou have {n} lives.\n\nNow,\n{info}",
+                                 f"That's right!\nYou have {n} lives.\nNow, which language "
+                                 f"has the following features?\n\n{info}",
                                  reply_markup=None, parse_mode="HTML")
 
             if personal_rating[userid] in achievements:
