@@ -23,6 +23,9 @@ def start_msg(langlist):
     
 • If you want to see more information on any of these languages before we start, type /info and the name of the language you want to learn more about;
 • if you want to add any languages, we can do that: type /add and the name of the language;
-• if you want to removes any languages from the list, we can also do that: type /remove and the name of the language;
+• if you want to remove any languages from the list, we can also do that: type /remove and the name of the language;
+or just press _start_ :3
 
-or just press _start_ :3'''
+• To end the game at any point, type /end
+• To see your rating (once you have guessed at least one language), type /rating
+'''
