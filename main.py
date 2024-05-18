@@ -80,10 +80,10 @@ def get_rate(message):
     bot.send_message(userid, end, reply_markup=None, parse_mode="HTML")
 
 
-@bot.message_handler(commands=['help'])
+'''@bot.message_handler(commands=['help'])
 def help(message):
     userid = message.from_user.id
-    bot.send_message(userid, "", reply_markup=None)
+    bot.send_message(userid, "", reply_markup=None)'''
 
 
 @bot.message_handler(commands=['hint'])
