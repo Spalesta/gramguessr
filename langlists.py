@@ -17,6 +17,7 @@ German
 Korean
 Hindi'''.split('\n')
 
+
 def start_msg(langlist):
     return f'''Okay, let's start studying *{', '.join(langlist)}*!
     

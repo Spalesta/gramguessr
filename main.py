@@ -1,8 +1,10 @@
+import random
+
+import pandas as pd
 import telebot
 from telebot import types
+
 import langlists
-import random
-import pandas as pd
 from config import *
 
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -10,6 +12,7 @@ facl_list_message = "I want to study FaCL languages!"
 most_list_message = "I want to study top-10 most learned languages!"
 rating = {}
 fail_count = {}
+
 
 @bot.message_handler(commands=['start'])
 def startbot(message):
@@ -51,7 +54,10 @@ def info(message):
                                  "Finish the game first", reply_markup=None)
     else:
         if len(message.text.strip()) == len('/info'):
-            bot.send_message(userid, f"What language would you like to learn more about? Please type /info *and* the name of the language", reply_markup=None, parse_mode='Markdown')
+            bot.send_message(userid,
+                             f"What language would you like to learn more about? Please type /info *and* the name of "
+                             f"the language",
+                             reply_markup=None, parse_mode='Markdown')
         else:
             lang = message.text[len('/info '):]
             info = get_info(lang)
@@ -64,9 +70,9 @@ def end(message):
     if userid in quiz_mode_on and quiz_mode_on[userid]:
         quiz_mode_on[userid] = False
         markup = types.ReplyKeyboardMarkup()
-        markup.row("start")
-        bot.send_message(userid, f"Okay! You've guessed "
-                                 f"{currently_studying[userid][0][:currently_studying[userid][1]]}\n"
+        markup.row("/start")
+        guessed = currently_studying[userid][0][:currently_studying[userid][1]]
+        bot.send_message(userid, f"Okay! You've guessed {','.join(guessed) if guessed else '0 languages'} correctly\n"
                                  f"Would you like to start a new game?", reply_markup=markup)
     else:
         bot.send_message(userid, "my guy you haven't even started yet", reply_markup=None)
@@ -75,10 +81,11 @@ def end(message):
 @bot.message_handler(commands=['rating'])
 def get_rate(message):
     userid = message.from_user.id
-    sorted_rate = dict(reversed(sorted(rating.items(), key=lambda x:x[1])))
+    sorted_rate = dict(reversed(sorted(rating.items(), key=lambda x: x[1])))
     end = "Current rating:\n"
     for index in range(len(sorted_rate.items())):
-        end += f"{index + 1}) <b>{list(sorted_rate.items())[index][0]}</b> - <b>{list(sorted_rate.items())[index][1]}</b>"
+        a = list(sorted_rate.items())[index]
+        end += f"{index + 1}) <b>{a[0]}</b> - <b>{a[1]}</b>"
 
     bot.send_message(userid, end, reply_markup=None, parse_mode="HTML")
 
@@ -93,7 +100,8 @@ def help(message):
 def help(message):
     userid = message.from_user.id
     if userid in quiz_mode_on and quiz_mode_on[userid]:
-        bot.send_message(userid, f"This one is {currently_studying[userid][0][currently_studying[userid][1]]}", reply_markup=None)
+        bot.send_message(userid, f"This one is {currently_studying[userid][0][currently_studying[userid][1]]}",
+                         reply_markup=None)
     else:
         bot.send_message(userid, "my guy you aren't playing yet what do you want a hint at????", reply_markup=None)
 
@@ -124,7 +132,8 @@ def remove(message):
     else:
         if len(message.text) <= len('/remove '):
             bot.send_message(userid,
-                             f"What language would you like to remove? Please type /remove *and* the name of the language",
+                             f"What language would you like to remove? Please type /remove *and* the name of "
+                             f"the language",
                              reply_markup=None, parse_mode='Markdown')
         else:
             lang = message.text[len('/remove '):]
@@ -145,11 +154,13 @@ def get_text_messages(message):
         markup = types.ReplyKeyboardMarkup()
         btn1 = types.KeyboardButton('start')
         markup.add(btn1)
-        bot.send_message(userid, langlists.start_msg(currently_studying[userid][0]), reply_markup=markup, parse_mode='Markdown')
-    
+        bot.send_message(userid, langlists.start_msg(currently_studying[userid][0]), reply_markup=markup,
+                         parse_mode='Markdown')
+
     elif message.text == 'start':
         if userid not in currently_studying:
-            bot.send_message(userid, "You currently don't have an active to-study list, please use the /start command", reply_markup=None)
+            bot.send_message(userid, "You currently don't have an active to-study list, please use the /start command",
+                             reply_markup=None)
         else:
             markup = types.ReplyKeyboardMarkup()
             for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
@@ -163,7 +174,7 @@ def get_text_messages(message):
     elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
         langlist = currently_studying[userid][0]
         i = currently_studying[userid][1]
-        
+
         if langlist[i] == message.text.strip():  # если пользователь угадал язык правильно
             rating[message.from_user.username] += 1
 
@@ -176,15 +187,21 @@ def get_text_messages(message):
                 quiz_mode_on[userid] = False
                 markup = types.ReplyKeyboardMarkup()
                 markup.row("start")
-                bot.send_message(userid, f"That's right! The game's over. Would you like to start again? ", reply_markup=markup)
+                bot.send_message(userid, f"That's right! The game's over. Would you like to start again? ",
+                                 reply_markup=markup)
             else:
                 lang = langlist[i]
                 info = get_info(lang)
-                bot.send_message(userid, f"That's right!\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.\n\nNow,\n{info}", reply_markup=None, parse_mode="HTML")
+                n = ('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])
+                bot.send_message(userid,
+                                 f"That's right!\nYou have {n} lives.\n\nNow,\n{info}",
+                                 reply_markup=None, parse_mode="HTML")
 
             if personal_rating[userid] in achievements:
-                bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_", reply_markup=None, parse_mode='Markdown')
-                bot.send_sticker(message.chat.id, "CAACAgQAAxkBAAIBHmZGKRxnyYHcBkcXUXnW07XEUejaAAJuDgACzb5RUT1kKoe5P8b9NQQ")
+                bot.send_message(userid, f"_new achievement unlocked: {achievements[personal_rating[userid]]}_",
+                                 reply_markup=None, parse_mode='Markdown')
+                bot.send_sticker(message.chat.id,
+                                 "CAACAgQAAxkBAAIBHmZGKRxnyYHcBkcXUXnW07XEUejaAAJuDgACzb5RUT1kKoe5P8b9NQQ")
 
         else:  # если не угадал язык
             if userid not in fail_count.keys():
@@ -196,14 +213,21 @@ def get_text_messages(message):
                 markup = types.ReplyKeyboardMarkup()
                 markup.row("start")
 
-                bot.send_message(userid, f"That's wrong :(\nYou ran out of all your lives.\nYou have {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.\nTo try again press button below or print /start.", reply_markup=markup)
+                bot.send_message(userid,
+                                 f"That's wrong :(\nYou ran out of all your lives.\n"
+                                 f"To try again press button below or print /start.",
+                                 reply_markup=markup)
                 fail_count[userid] = 0
 
             else:
 
                 if fail_count == HINT_APPLY_AMOUNT:
                     bot.send_message(userid, "Type /hint if you'd like a hint ;3", reply_markup=None)
-                bot.send_message(userid, f"That's wrong :( Try again?\nYou've got <b>{fail_count[userid]}</b> fails.\nYou have only {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} lives.", reply_markup=None, parse_mode='HTML')
+                bot.send_message(userid,
+                                 f"That's wrong :( Try again?\nYou've got <b>{fail_count[userid]}</b> fails.\nYou have "
+                                 f"only {('❤️' * (LIVES_AMOUNT - fail_count[userid])) + ('🖤' * fail_count[userid])} "
+                                 f"lives.",
+                                 reply_markup=None, parse_mode='HTML')
 
     else:  # если пользователь совсем какой-то бред написал
         bot.send_message(userid, 'what?????', reply_markup=None)
@@ -227,6 +251,7 @@ def get_info(language_name):  # принимает название языка, 
             end_msg += f'<b>{row["Parameter"]}:</b>\n{row["Description"]}\n---\n'
         # end_msg = language_name + end_msg
         return end_msg
+
 
 bot.polling(none_stop=True, interval=0)
 '''
