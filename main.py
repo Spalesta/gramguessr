@@ -63,8 +63,11 @@ def end(message):
     userid = message.from_user.id
     if userid in quiz_mode_on and quiz_mode_on[userid]:
         quiz_mode_on[userid] = False
+        markup = types.ReplyKeyboardMarkup()
+        markup.row("start")
         bot.send_message(userid, f"Okay! You've guessed "
-                                 f"{currently_studying[userid][0][:currently_studying[userid][1]]}", reply_markup=None)
+                                 f"{currently_studying[userid][0][:currently_studying[userid][1]]}\n"
+                                 f"Would you like to start a new game?", reply_markup=markup)
     else:
         bot.send_message(userid, "my guy you haven't even started yet", reply_markup=None)
 
@@ -145,14 +148,17 @@ def get_text_messages(message):
         bot.send_message(userid, langlists.start_msg(currently_studying[userid][0]), reply_markup=markup, parse_mode='Markdown')
     
     elif message.text == 'start':
-        markup = types.ReplyKeyboardMarkup()
-        for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
-            markup.add(types.KeyboardButton(lang))
-        quiz_mode_on[userid] = True
+        if userid not in currently_studying:
+            bot.send_message(userid, "You currently don't have an active to-study list, please use the /start command", reply_markup=None)
+        else:
+            markup = types.ReplyKeyboardMarkup()
+            for lang in random.sample(currently_studying[userid][0], len(currently_studying[userid][0])):
+                markup.add(types.KeyboardButton(lang))
+            quiz_mode_on[userid] = True
 
-        lang_info = get_info(currently_studying[userid][0][0])
+            lang_info = get_info(currently_studying[userid][0][0])
 
-        bot.send_message(userid, lang_info, reply_markup=markup, parse_mode="HTML")
+            bot.send_message(userid, lang_info, reply_markup=markup, parse_mode="HTML")
 
     elif message.text in langlists.facl + langlists.most:  # если пользователь написал название языка
         langlist = currently_studying[userid][0]
@@ -168,7 +174,9 @@ def get_text_messages(message):
             i += 1
             if i == len(langlist):
                 quiz_mode_on[userid] = False
-                bot.send_message(userid, f"That's right! The game's over", reply_markup=None)
+                markup = types.ReplyKeyboardMarkup()
+                markup.row("start")
+                bot.send_message(userid, f"That's right! The game's over. Would you like to start again? ", reply_markup=markup)
             else:
                 lang = langlist[i]
                 info = get_info(lang)
@@ -217,6 +225,7 @@ def get_info(language_name):  # принимает название языка, 
         end_msg = ""
         for _, row in query.iterrows():
             end_msg += f'<b>{row["Parameter"]}:</b>\n{row["Description"]}\n---\n'
+        # end_msg = language_name + end_msg
         return end_msg
 
 bot.polling(none_stop=True, interval=0)
