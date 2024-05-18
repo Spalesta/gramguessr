@@ -27,4 +27,5 @@ or just press _start_ :3
 
 • To end the game at any point, type /end
 • To see your rating (once you have guessed at least one language), type /rating
+• To get a hint, type /hint
 '''
