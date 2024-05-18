@@ -27,19 +27,23 @@ language_names_df.to_csv('/final_language_names.csv', index=False)
 file_path_final_language_names = '/content/drive/My Drive/hse_final_project/final_language_names.csv'
 final_language_names_df = pd.read_csv(file_path_final_language_names)
 
-# объединяем таблички parameters и values по ID и Parameter_ID, тк они одни и те же. по способу outer, значит ни одна строка не будет потеряна
+# объединяем таблички parameters и values по ID и Parameter_ID, тк они одни и те же. по способу outer, 
+# значит ни одна строка не будет потеряна
 merged_param_val_df = pd.merge(parameters_df, values_df, left_on='ID', right_on='Parameter_ID', how='outer')
 # убираем ненужные столбцы
 merged_param_val_df.drop(['Comment', 'Source', 'Example_ID', 'Description', 'ColumnSpec', 'Chapter_ID'], axis=1, inplace=True)
 
 # объединяем merged_param_val_df с final_language_names по Language_ID
-merged_w_lang_names_df = pd.merge(final_language_names_df, merged_param_val_df, left_on='Language_ID', right_on='Language_ID', how='outer')
+merged_w_lang_names_df = pd.merge(final_language_names_df, merged_param_val_df, left_on='Language_ID', \
+                                  right_on='Language_ID', how='outer')
 # убираем ненужные столбцы
 merged_w_lang_names_df.drop(['Provider'], axis=1, inplace=True)
 
 # объединяем merged_w_lang_names_df
-final_merged_df = pd.merge(merged_w_lang_names_df, codes_df, left_on='Code_ID', right_on='ID', how='outer', suffixes=('_left', '_right'))
-final_merged_df.drop(['ID_x', 'ID_y', 'ID_left', 'Parameter_ID_left', 'Value', 'Code_ID', 'ID_right', 'Parameter_ID_right', 'Number', 'icon'], axis=1, inplace=True)
+final_merged_df = pd.merge(merged_w_lang_names_df, codes_df, left_on='Code_ID', right_on='ID', how='outer', \
+                           suffixes=('_left', '_right'))
+final_merged_df.drop(['ID_x', 'ID_y', 'ID_left', 'Parameter_ID_left', 'Value', 'Code_ID', 'ID_right', \
+                      'Parameter_ID_right', 'Number', 'icon'], axis=1, inplace=True)
 
 # убираем дублирующиеся строки
 final_merged_df = final_merged_df.drop_duplicates()
